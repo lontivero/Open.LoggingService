@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util='http://schemas.microsoft.com/wix/UtilExtension'>
+	<Product Id="*" Name="Logging Service" Language="1033" Version="1.0.0.0" Manufacturer="Temosoft" UpgradeCode="48dc066c-97cc-4512-8fa3-52bbe195e075">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64"/>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_InstallDir" />
+    
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Condition Message="You need to be an administrator to install this product.">
+      Privileged
+    </Condition>
+
+    <Feature Id="All" Title="Logging Service" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+  <Fragment>
+   <Directory Id="TARGETDIR" Name="SourceDir">
+			  <Directory Id="ProgramFiles64Folder">
+          <Directory Id="ProgramFilesTemosoft" Name="Temosoft">
+            <Component Id="ProgramFilesManufacturerFolder" Guid="36E8473A-2882-4603-A293-3D0DC951B8E4" Win64="yes">
+              <RemoveFolder Id="ProgramFilesManufacturerFolder" On="uninstall"/>
+              <RegistryValue Root="HKLM"
+                             Key="Software\[Manufacturer]\[ProductName]"
+                             Name="ManufacturerFolder"
+                             Type="string"
+                             Value=""
+                             KeyPath="yes" />
+            </Component>
+
+            <Directory Id="INSTALLFOLDER" Name="Open.LoggingService">
+              <Component Id="ProgramFilesInstallFolder"
+                         Guid="B9B6B98A-557A-479F-8564-8A7FE94CE669" Win64="yes">
+                <RemoveFolder Id="ProgramFilesInstallFolder" On="uninstall"/>
+                <RegistryValue Root="HKLM"
+                               Key="Software\[Manufacturer]\[ProductName]"
+                               Type="string"
+                               Value=""
+                               KeyPath="yes" />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+   </Directory>
+  </Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <ComponentRef Id="ProgramFilesInstallFolder"/>
+      <ComponentRef Id="ProgramFilesManufacturerFolder"/>
+			<Component Id="ProductComponent" Guid="EC0B0020-A824-4DE0-807B-0B23EBFDB7AA"  Win64="yes">
+				<File Id="Open.LoggingService.exe" 
+              Name="Open.LoggingService.exe" 
+              Source="..\Open.LoggingService\bin\Debug\Open.LoggingService.exe" 
+              Vital="yes" KeyPath="yes" DiskId="1"/>
+				<File Id="Open.LoggingService.exe.config" 
+              Name="Open.LoggingService.exe.config" 
+              Source="..\Open.LoggingService\bin\Debug\Open.LoggingService.exe.config" 
+              Vital="yes" KeyPath="no" DiskId="1"/>
+        <File Id="log4net.dll"
+              Name="log4net.dll"
+              Source="..\Open.LoggingService\bin\Debug\log4net.dll"
+              Vital="yes" KeyPath="no" DiskId="1"/>
+
+        <ServiceInstall
+					Id="ServiceInstaller"
+					Type="ownProcess"
+					Vital="yes"
+					Name="Logging Service"
+					DisplayName="A remote logging service for logs consolidation."
+					Description="A remote logging service for logs consolidation."
+					Start="auto"
+					Account="LocalSystem"
+					ErrorControl="normal"
+					Interactive="no">
+          <util:PermissionEx  User="Everyone" ServicePauseContinue="yes" ServiceQueryStatus="yes"
+                                              ServiceStart="yes" ServiceStop="yes" ServiceUserDefinedControl="yes" />
+        </ServiceInstall>
+
+        <ServiceControl Id="StartService" Start="install" Stop="both" Remove="uninstall" 
+                        Name="Logging Service" Wait="yes" />
+			</Component>
+
+		</ComponentGroup>
+	</Fragment>
+</Wix>
